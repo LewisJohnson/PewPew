@@ -86,10 +86,17 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	uint8 bUsingMotionControllers : 1;
 
+	/// <summary>
+	/// To make sure the gun doesn't shoot 999 a second, we need a cooldown
+	/// </summary>
+	FTimerHandle WeaponTimerHandle;
+
 protected:
 	
 	/** Fires a projectile. */
 	void OnFireStart();
+
+	void WhileFire();
 
 	void OnFireStop();
 

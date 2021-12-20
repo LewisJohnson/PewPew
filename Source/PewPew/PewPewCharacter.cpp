@@ -136,8 +136,10 @@ void APewPewCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerIn
 
 void APewPewCharacter::OnFireStart()
 {
+	GetWorldTimerManager().SetTimer(APewPewCharacter::WeaponTimerHandle, this, &APewPewCharacter::WhileFire, 0.2f, true, 0.1f);
 }
 
+void APewPewCharacter::WhileFire()
 {
 	// try and fire a projectile
 	if (ProjectileClass != nullptr)
@@ -185,7 +187,9 @@ void APewPewCharacter::OnFireStart()
 	}
 }
 
+void APewPewCharacter::OnFireStop()
 {
+	GetWorldTimerManager().ClearTimer(APewPewCharacter::WeaponTimerHandle);
 }
 
 void APewPewCharacter::MoveForward(float Value)
