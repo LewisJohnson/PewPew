@@ -66,10 +66,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	UAnimMontage* FireAnimation;
 
-	/** Whether to use motion controller location for aiming. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
-	uint8 bUsingMotionControllers : 1;
-
 	/// <summary>
 	/// To make sure the gun doesn't shoot 999 a second, we need a cooldown
 	/// </summary>
@@ -112,6 +108,15 @@ public:
 
 	/** Returns FirstPersonCameraComponent subobject **/
 	UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
+
+	UPROPERTY(VisibleAnywhere, BlueprintRead)
+	int MagazineAmmo;
+
+	UPROPERTY(VisibleAnywhere, BlueprintRead)
+	int TotalRemainingAmmo;
+
+	UFUNCTION(BlueprintCallable)
+	int getMagazineAmmo() const { return MagazineAmmo; }
 
 };
 
