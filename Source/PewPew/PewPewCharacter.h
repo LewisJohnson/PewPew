@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "Components/SlateWrapperTypes.h"
 #include "PewPewCharacter.generated.h"
 
 class UInputComponent;
@@ -35,13 +36,10 @@ class APewPewCharacter : public ACharacter
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FirstPersonCameraComponent;
 
-	/// <summary>
-	/// True while reloading
-	/// </summary>
-	bool isReloading;
-
 	const int MAX_MAGAZINE_AMMO_CAPACITY = 32;
 	const int NUMBER_OF_MAGAZINES = 4;
+
+	const float RELOAD_TIME = 2;
 
 public:
 	APewPewCharacter();
@@ -78,6 +76,8 @@ public:
 	/// To make sure the gun doesn't shoot 999 a second, we need a cooldown
 	/// </summary>
 	FTimerHandle WeaponTimerHandle;
+
+	FTimerHandle ReloadTimerHandle;
 
 protected:
 	
@@ -127,11 +127,20 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	int TotalRemainingAmmo;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	bool isReloading;
+
 	UFUNCTION(BlueprintCallable)
 	int getMagazineAmmo() const { return MagazineAmmo; }
 
 	UFUNCTION(BlueprintCallable)
 	int getTotalRemainingAmmo() const { return TotalRemainingAmmo; }
+
+	UFUNCTION(BlueprintCallable)
+	bool getReloadingState() const { return isReloading; }
+
+	UFUNCTION(BlueprintCallable)
+	ESlateVisibility getReloadingVisibility() const { return isReloading ? ESlateVisibility::Visible : ESlateVisibility::Collapsed; }
 
 };
 

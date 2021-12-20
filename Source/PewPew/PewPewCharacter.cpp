@@ -115,6 +115,7 @@ void APewPewCharacter::WhileFire()
 	if (MagazineAmmo <= 0)
 	{
 		this->OnReloadStart();
+		return;
 	}
 
 	// try and fire a projectile
@@ -164,8 +165,6 @@ void APewPewCharacter::OnFireStop()
 
 void APewPewCharacter::OnReloadStart()
 {
-	GetWorldTimerManager().ClearTimer(APewPewCharacter::WeaponTimerHandle);
-
 	isReloading = true;
 	
 	if (TotalRemainingAmmo > 0)
@@ -176,12 +175,12 @@ void APewPewCharacter::OnReloadStart()
 		MagazineAmmo += ammoAvailable;
 	}
 
-	GetWorldTimerManager().SetTimer(APewPewCharacter::WeaponTimerHandle, this, &APewPewCharacter::OnReloadStop, 0.1f, true, 5.0f);
+	GetWorldTimerManager().SetTimer(APewPewCharacter::ReloadTimerHandle, this, &APewPewCharacter::OnReloadStop, 0.1f, true, RELOAD_TIME);
 }
 
 void APewPewCharacter::OnReloadStop()
 {
-	GetWorldTimerManager().ClearTimer(APewPewCharacter::WeaponTimerHandle);
+	GetWorldTimerManager().ClearTimer(APewPewCharacter::ReloadTimerHandle);
 	isReloading = false;
 }
 
