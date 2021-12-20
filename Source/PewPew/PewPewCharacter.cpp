@@ -9,8 +9,7 @@
 #include "GameFramework/InputSettings.h"
 #include "HeadMountedDisplayFunctionLibrary.h"
 #include "Kismet/GameplayStatics.h"
-#include "MotionControllerComponent.h"
-#include "XRMotionControllerBase.h" // for FXRMotionControllerBase::RightHandSourceId
+#include <algorithm>
 
 DEFINE_LOG_CATEGORY_STATIC(LogFPChar, Warning, All);
 
@@ -55,8 +54,10 @@ APewPewCharacter::APewPewCharacter()
 	// Default offset from the character location for projectiles to spawn
 	GunOffset = FVector(100.0f, 0.0f, 10.0f);
 
-	MagazineAmmo = 0;
-	TotalRemainingAmmo = 0;
+	isReloading = false;
+
+	MagazineAmmo = MAX_MAGAZINE_AMMO_CAPACITY;
+	TotalRemainingAmmo = MAX_MAGAZINE_AMMO_CAPACITY * NUMBER_OF_MAGAZINES;
 }
 
 void APewPewCharacter::BeginPlay()
@@ -100,6 +101,7 @@ void APewPewCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerIn
 	PlayerInputComponent->BindAxis("LookUpRate", this, &APewPewCharacter::LookUpAtRate);
 }
 
+#pragma region Fire
 void APewPewCharacter::OnFireStart()
 {
 	GetWorldTimerManager().SetTimer(APewPewCharacter::WeaponTimerHandle, this, &APewPewCharacter::WhileFire, 0.1f, true);
@@ -107,8 +109,13 @@ void APewPewCharacter::OnFireStart()
 
 void APewPewCharacter::WhileFire()
 {
-	if (MagazineAmmo <= 0)
+	if (isReloading)
 		return;
+
+	if (MagazineAmmo <= 0)
+	{
+		this->OnReloadStart();
+	}
 
 	// try and fire a projectile
 	if (ProjectileClass != nullptr)
@@ -152,6 +159,30 @@ void APewPewCharacter::WhileFire()
 void APewPewCharacter::OnFireStop()
 {
 	GetWorldTimerManager().ClearTimer(APewPewCharacter::WeaponTimerHandle);
+}
+#pragma endregion
+
+void APewPewCharacter::OnReloadStart()
+{
+	GetWorldTimerManager().ClearTimer(APewPewCharacter::WeaponTimerHandle);
+
+	isReloading = true;
+	
+	if (TotalRemainingAmmo > 0)
+	{
+		auto ammoAvailable = std::min(TotalRemainingAmmo, MAX_MAGAZINE_AMMO_CAPACITY);
+
+		TotalRemainingAmmo -= ammoAvailable;
+		MagazineAmmo += ammoAvailable;
+	}
+
+	GetWorldTimerManager().SetTimer(APewPewCharacter::WeaponTimerHandle, this, &APewPewCharacter::OnReloadStop, 0.1f, true, 5.0f);
+}
+
+void APewPewCharacter::OnReloadStop()
+{
+	GetWorldTimerManager().ClearTimer(APewPewCharacter::WeaponTimerHandle);
+	isReloading = false;
 }
 
 void APewPewCharacter::MoveForward(float Value)

@@ -35,6 +35,14 @@ class APewPewCharacter : public ACharacter
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FirstPersonCameraComponent;
 
+	/// <summary>
+	/// True while reloading
+	/// </summary>
+	bool isReloading;
+
+	const int MAX_MAGAZINE_AMMO_CAPACITY = 32;
+	const int NUMBER_OF_MAGAZINES = 4;
+
 public:
 	APewPewCharacter();
 
@@ -80,6 +88,10 @@ protected:
 
 	void OnFireStop();
 
+	void OnReloadStart();
+
+	void OnReloadStop();
+
 	/** Handles moving forward/backward */
 	void MoveForward(float Val);
 
@@ -109,14 +121,17 @@ public:
 	/** Returns FirstPersonCameraComponent subobject **/
 	UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
 
-	UPROPERTY(VisibleAnywhere, BlueprintRead)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	int MagazineAmmo;
 
-	UPROPERTY(VisibleAnywhere, BlueprintRead)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	int TotalRemainingAmmo;
 
 	UFUNCTION(BlueprintCallable)
 	int getMagazineAmmo() const { return MagazineAmmo; }
+
+	UFUNCTION(BlueprintCallable)
+	int getTotalRemainingAmmo() const { return TotalRemainingAmmo; }
 
 };
 
