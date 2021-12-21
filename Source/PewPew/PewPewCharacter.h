@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Components/SlateWrapperTypes.h"
+#include <PewPew/EFireModes.h>
+#include <cstddef>
 #include "PewPewCharacter.generated.h"
 
 class UInputComponent;
@@ -92,6 +94,8 @@ protected:
 
 	void OnReloadStop();
 
+	void OnFireModeChange();
+
 	/** Handles moving forward/backward */
 	void MoveForward(float Val);
 
@@ -115,11 +119,18 @@ protected:
 	virtual void SetupPlayerInputComponent(UInputComponent* InputComponent) override;
 
 public:
-	/** Returns Mesh1P subobject **/
+
+	/** Returns Mesh1P sub object **/
 	USkeletalMeshComponent* GetMesh1P() const { return Mesh1P; }
 
-	/** Returns FirstPersonCameraComponent subobject **/
+	/** Returns FirstPersonCameraComponent sub object **/
 	UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	EFireModes FireMode;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	int BurstAmmoUsed;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	int MagazineAmmo;
@@ -141,6 +152,24 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	ESlateVisibility getReloadingVisibility() const { return isReloading ? ESlateVisibility::Visible : ESlateVisibility::Collapsed; }
+
+	UFUNCTION(BlueprintCallable)
+	FString getFireModeText() const
+	{ 
+		switch (FireMode)
+		{
+			case EFireModes::AUTO_FIRE:
+				return FString("AUTO");
+
+			case EFireModes::BURST_FIRE:
+				return FString("BURST");
+
+			case EFireModes::SINGLE_FIRE:
+				return FString("SINGLE");
+		}
+
+		return FString("#ERROR_TEXT");
+	}
 
 };
 

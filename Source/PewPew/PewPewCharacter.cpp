@@ -58,6 +58,7 @@ APewPewCharacter::APewPewCharacter()
 
 	MagazineAmmo = MAX_MAGAZINE_AMMO_CAPACITY;
 	TotalRemainingAmmo = MAX_MAGAZINE_AMMO_CAPACITY * NUMBER_OF_MAGAZINES;
+	FireMode = EFireModes::BURST_FIRE;
 }
 
 void APewPewCharacter::BeginPlay()
@@ -88,6 +89,8 @@ void APewPewCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerIn
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &APewPewCharacter::OnFireStart);
 	PlayerInputComponent->BindAction("Fire", IE_Released, this, &APewPewCharacter::OnFireStop);
 
+	PlayerInputComponent->BindAction("ChangeFireMode", IE_Pressed, this, &APewPewCharacter::OnFireModeChange);
+
 	// Bind movement events
 	PlayerInputComponent->BindAxis("MoveForward", this, &APewPewCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &APewPewCharacter::MoveRight);
@@ -101,10 +104,31 @@ void APewPewCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerIn
 	PlayerInputComponent->BindAxis("LookUpRate", this, &APewPewCharacter::LookUpAtRate);
 }
 
+void APewPewCharacter::OnFireModeChange()
+{
+	switch (FireMode)
+	{
+		case EFireModes::AUTO_FIRE:
+			FireMode = EFireModes::BURST_FIRE;
+			break;
+
+		case EFireModes::BURST_FIRE:
+			FireMode = EFireModes::SINGLE_FIRE;
+			break;
+
+		case EFireModes::SINGLE_FIRE:
+			FireMode = EFireModes::AUTO_FIRE;
+			break;
+	}
+
+	return;
+}
+
 #pragma region Fire
+
 void APewPewCharacter::OnFireStart()
 {
-	GetWorldTimerManager().SetTimer(APewPewCharacter::WeaponTimerHandle, this, &APewPewCharacter::WhileFire, 0.1f, true);
+	GetWorldTimerManager().SetTimer(APewPewCharacter::WeaponTimerHandle, this, &APewPewCharacter::WhileFire, 0.0000001f, true);
 }
 
 void APewPewCharacter::WhileFire()
@@ -117,6 +141,15 @@ void APewPewCharacter::WhileFire()
 		this->OnReloadStart();
 		return;
 	}
+
+	if (BurstAmmoUsed == 3)
+	{
+		this->OnFireStop();
+		return;
+	}
+
+	if (FireMode == EFireModes::BURST_FIRE)
+		BurstAmmoUsed++;
 
 	// try and fire a projectile
 	if (ProjectileClass != nullptr)
@@ -155,18 +188,23 @@ void APewPewCharacter::WhileFire()
 			AnimInstance->Montage_Play(FireAnimation, 1.f);
 		}
 	}
+
+	if (FireMode == EFireModes::SINGLE_FIRE)
+		this->OnFireStop();
 }
 
 void APewPewCharacter::OnFireStop()
 {
 	GetWorldTimerManager().ClearTimer(APewPewCharacter::WeaponTimerHandle);
+	BurstAmmoUsed = 0;
 }
+
 #pragma endregion
 
 void APewPewCharacter::OnReloadStart()
 {
 	isReloading = true;
-	
+
 	if (TotalRemainingAmmo > 0)
 	{
 		auto ammoAvailable = std::min(TotalRemainingAmmo, MAX_MAGAZINE_AMMO_CAPACITY);
